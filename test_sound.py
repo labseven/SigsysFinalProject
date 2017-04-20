@@ -40,9 +40,9 @@ def make_dpsk_signal(data, hz=1000, clock=1, peak=2000, sample_rate=global_sampl
 
     print("num_samples:", num_samples)
     # Init with three bits for calibration
-    # signal = cos1
-    # signal = np.append(signal, cos1)
-    # signal = np.append(signal, cos1)
+    signal = cos1
+    signal = np.append(signal, cos1)
+    signal = np.append(signal, cos1)
     signal = []
 
     print("Transmitting:", data)
@@ -55,7 +55,8 @@ def make_dpsk_signal(data, hz=1000, clock=1, peak=2000, sample_rate=global_sampl
         else:
             raise ValueError("data must be 0 or 1. given:", i)
 
-    return signal
+    ref_tone = np.resize(cos1, (num_samples * (len(data) + 3),)).astype(np.int16)
+    return signal.astype(np.int16)
 
 
 def str_to_binary(string):
@@ -69,32 +70,31 @@ def str_to_binary(string):
 def plot_tone(tone, clock_ms=1, hz=1000):
     fig, ax = plt.subplots()
 
-    samples_to_show = int(global_sample_rate/hz)*3
-    plt_signal = tone[:samples_to_show*2]
+    # Number of periods must end in x.5 to make
+    samples_to_show = int(global_sample_rate/hz * 3)
+    plt_tone = tone[:samples_to_show]
 
     print("Plotting...")
     print("Tone len:", len(tone), "Samples to show:", samples_to_show, "Number of bits:", int((len(tone)/clock_ms)/global_sample_rate))
+
+    # Cuts out same data
     for i in range(1, int((len(tone)/clock_ms)/global_sample_rate)):
-        print("appending", (clock_ms * i * global_sample_rate) - samples_to_show, (clock_ms * i * global_sample_rate) + samples_to_show)
-        plt_signal = np.append(plt_signal, tone[(clock_ms * i * global_sample_rate) - samples_to_show:(clock_ms * i * global_sample_rate) + samples_to_show])
-    plt.plot(plt_signal)
+        print(tone[(clock_ms * i * global_sample_rate) - samples_to_show])
+        print(tone[(clock_ms * i * global_sample_rate) + samples_to_show])
+        plt_tone = np.append(plt_tone, tone[(clock_ms * i * global_sample_rate) - samples_to_show:(clock_ms * i * global_sample_rate) + samples_to_show])
+
+    plt.plot(plt_tone)
     fig.show()
 
 # Pygame init
-pygame.mixer.pre_init(global_sample_rate, -16, 1)
+pygame.mixer.pre_init(global_sample_rate, -16, 2)
 pygame.init()
 
-# Tone Generation
-# tone = cosine_wave(1000, 4000, phase=np.pi, n_samples=44000)
-# tone = np.append(tone, cosine_wave(500, 6000, n_samples=44000))
-# tone = np.append(tone, cosine_wave(500, 6000, phase=np.pi, n_samples=44000))
-
-# tone = make_dpsk_signal(str_to_binary("h"), 1000, clock=1000)
-tone = make_dpsk_signal("1000", hz=1000, clock=2)
+tone = make_dpsk_signal("1001", peak=10000, hz=1000, clock=2)
 
 # Playing and plotting tone
 plot_tone(tone, clock_ms=2)
-# play_tone(tone)
+play_tone(tone)
 print("Done")
 
 # Pygame exit
