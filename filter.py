@@ -34,25 +34,28 @@ def make_match_filter(length, hz, peak=5000):
 
     return match_filter
 
+def bytes_to_array(bytes_in, channels=1):
+    """ Outputs an array of ints from a string of bytes.
+    Input:
+        bytes_in: string of bytes
+
+    Output:
+        array of ints
+    """
+    split_bytes = [bytes_in[i*2:i*2+2] for i in range(len(bytes_in) // 2)]
+    return [int.from_bytes(x, byteorder="little") for x in split_bytes]
+
 match_filter = make_match_filter(10, 1000)
 
 
 with wave.open("out.wav", mode="rb") as signal_input:
     fig, ax = plt.subplots()
-    signal_plt = signal_input.readframes(2)[:2]
-    print(int.from_bytes(signal_plt, byteorder="little"))
-    signal_plt = signal_input.readframes(1)
-    print(signal_plt)
-    signal_plt = signal_input.readframes(1)
-    print(signal_plt)
-    signal_plt = int.from_bytes(signal_input.readframes(1), byteorder="little")
-    print(signal_plt)
-    signal_plt = int.from_bytes(signal_input.readframes(1), byteorder="little")
-    print(signal_plt)
-    signal_plt = int.from_bytes(signal_input.readframes(1), byteorder="little")
-    print(signal_plt)
-    plt.plot(int(signal_plt))
-    # fig.show()
+    signal_plt = signal_input.readframes(signal_input.getnframes())
+
+    signal_plt = bytes_to_array(signal_plt)
+
+    plt.plot(signal_plt)
+    fig.show()
 
 
 
