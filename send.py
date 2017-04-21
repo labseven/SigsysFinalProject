@@ -1,12 +1,18 @@
 from signal_functions import *
 import time
 
+data = [1, 0, 1, 1]
+print("Making signal. Hz:", CARRIER_FREQ, "\tClock:", str(CLOCK_MS) + "ms", \
+        "\tSampling Rate:", SAMPLING_RATE)
 
-signal = make_bpsk_signal([1, 0, 1, 1])
+print("Data:", data)
 
-# plot_signal(signal)
+signal = make_bpsk_signal(data)
+
+
 export_wav(signal)
 
-# 
+
+# plot_signal(signal)
 # while True:
 #     time.sleep(10)
