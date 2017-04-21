@@ -1,63 +1,20 @@
-import numpy as np
-import wave
-import scipy
-from scipy import signal
 import matplotlib.pyplot as plt
+import scipy.signal
+import numpy as np
 import time
+from signal_functions import *
 
 
-SAMPLING_RATE = 192000
-
-def sine_wave(hz, peak, sample_rate=SAMPLING_RATE, n_samples=SAMPLING_RATE):
-    """ Compute n_samples of a sine wave.
-    Given frequency, peak amplitude, sample rate"""
-    length = sample_rate / hz                # How many samples per one wave
-    omega = np.pi * 2 / length               # Portion of wave per sample
-    xvalues = np.arange(int(length)) * omega # Array of x values
-    onecycle = peak * np.sin(xvalues)        # One wave (sin of each x value)
-    return np.resize(onecycle, (n_samples,)).astype(np.int16)   # Repeat the wave to fill n_samples
-
-def gaus_curve(length, sample_rate=SAMPLING_RATE):
-    return signal.gaussian((length * sample_rate) / 1000, std=25*(length))
+match_filter = make_match_filter(1000)
+signal_in = import_wav("out.wav")
 
 
-def make_match_filter(length, hz, peak=5000):
-    sin1 = sine_wave(hz, peak, n_samples=int((length / 1000) * SAMPLING_RATE))
-    gaus = gaus_curve(length)
 
-    match_filter = gaus * sin1
-    fig, ax = plt.subplots()
-    # plt.plot(sin1)
-    # plt.plot(gaus)
-    plt.plot(match_filter)
-    # fig.show()
+# plot_waveform(match_filter)
+# plot_signal(signal_in, clock_ms=1000)
 
-    return match_filter
-
-def bytes_to_array(bytes_in, channels=1):
-    """ Outputs an array of ints from a string of bytes.
-    Input:
-        bytes_in: string of bytes
-
-    Output:
-        array of ints
-    """
-    split_bytes = [bytes_in[i*2:i*2+2] for i in range(len(bytes_in) // 2)]
-    return [int.from_bytes(x, byteorder="little") for x in split_bytes]
-
-match_filter = make_match_filter(10, 1000)
-
-
-with wave.open("out.wav", mode="rb") as signal_input:
-    fig, ax = plt.subplots()
-    signal_plt = signal_input.readframes(signal_input.getnframes())
-
-    signal_plt = bytes_to_array(signal_plt)
-
-    plt.plot(signal_plt)
-    fig.show()
-
-
+convolution = scipy.signal.fftconvolve(match_filter, signal_in[:SAMPLES_PER_MS])
+plot_waveform(convolution)
 
 while True:
     time.sleep(10)
