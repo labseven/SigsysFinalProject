@@ -30,20 +30,29 @@ def make_match_filter(length, hz, peak=5000):
     # plt.plot(sin1)
     # plt.plot(gaus)
     plt.plot(match_filter)
-    fig.show()
+    # fig.show()
 
     return match_filter
 
 match_filter = make_match_filter(10, 1000)
 
-#
-# with wave.open("out.wav", mode="rb") as signal_input:
-#
-#     fig, ax = plt.subplots()
-#     signal_plt = signal_input.readframes(5000)
-#     # print(signal_plt)
-#     # plt.plot(signal_plt)
-#     fig.show()
+
+with wave.open("out.wav", mode="rb") as signal_input:
+    fig, ax = plt.subplots()
+    signal_plt = signal_input.readframes(2)[:2]
+    print(int.from_bytes(signal_plt, byteorder="little"))
+    signal_plt = signal_input.readframes(1)
+    print(signal_plt)
+    signal_plt = signal_input.readframes(1)
+    print(signal_plt)
+    signal_plt = int.from_bytes(signal_input.readframes(1), byteorder="little")
+    print(signal_plt)
+    signal_plt = int.from_bytes(signal_input.readframes(1), byteorder="little")
+    print(signal_plt)
+    signal_plt = int.from_bytes(signal_input.readframes(1), byteorder="little")
+    print(signal_plt)
+    plt.plot(int(signal_plt))
+    # fig.show()
 
 
 
