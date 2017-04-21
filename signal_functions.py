@@ -48,19 +48,19 @@ def cosine_wave(hz, peak, len_ms, phase=0):
     one_period = np.cos(xvalues + phase) * peak             # One period of the wave
     return np.resize(one_period, (num_samples,)).astype(np.int16) # Repeat the wave to fill num_samples
 
-def gaus_curve(length, sample_rate=SAMPLING_RATE):
-    return signal.gaussian((length * sample_rate) / 1000, std=25*(length))
+def gaus_curve(length_ms, sample_rate=SAMPLING_RATE):
+    return signal.gaussian((length_ms * sample_rate) / 1000, std=25*(length_ms))
 
 
-def make_match_filter(length, hz=CARRIER_FREQ, peak=1):
-    cos1 = cosine_wave(hz, peak, length)
-    gaus = gaus_curve(length)
+def make_match_filter(length_ms=CLOCK_MS, hz=CARRIER_FREQ, peak=1):
+    cos1 = cosine_wave(hz, peak, length_ms)
+    gaus = gaus_curve(length_ms)
 
     match_filter = gaus * cos1
     return match_filter
 
 
-def make_bpsk_signal(data, hz=1000, clock_ms=CLOCK_MS, peak=2000):
+def make_bpsk_signal(data, hz=CARRIER_FREQ, clock_ms=CLOCK_MS, peak=2000):
     """ Creates a BPSK signal.
     Input:
         data:       ndarray of input data [1,0] or [1,-1]
@@ -123,7 +123,7 @@ def import_wav(filename):
     return wave_in[1]
 
 
-def plot_signal(signal, hz=1000, clock_ms=CLOCK_MS):
+def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS):
     """ Plots a signal. Only plots 3 periods to each side of a bit.
     Input:
         signal:     ndarray to plot
