@@ -124,5 +124,8 @@ signal = make_bpsk_signal([1, 0, 1, 1], clock_ms=100)
 plot_signal(signal, clock_ms=100)
 save_signal(signal)
 
+
+pygame.quit()
+
 while True:
     time.sleep(10)
