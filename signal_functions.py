@@ -177,3 +177,9 @@ def play_wave(wave):
     sound = pygame.sndarray.make_sound(wave)
     sound.play()
     time.sleep(sound.get_length())
+
+def get_envelope(signal_in, downsample=10):
+    match_filter = make_match_filter()
+    convolution = scipy.signal.fftconvolve(match_filter, signal_in)
+    convolution = scipy.signal.fftconvolve(match_filter, convolution)
+    return np.abs(scipy.signal.hilbert(convolution[::downsample])), convolution
