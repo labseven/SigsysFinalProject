@@ -6,12 +6,14 @@ import scipy.io.wavfile
 from scipy import signal
 import matplotlib.pyplot as plt
 import math
+import pygame.sndarray
+import time
 
 SAMPLING_RATE = 192000
 SAMPLES_PER_MS = int(SAMPLING_RATE / 1000)
 
-CARRIER_FREQ = 10
-CLOCK_MS = 1000
+CARRIER_FREQ = 5000
+CLOCK_MS = 100
 
 
 def sine_wave(hz, peak, len_ms, phase=0):
@@ -155,7 +157,7 @@ def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS, downsample=10, title
     ax.set_title(title)
     ax.set_xlabel(ax_labels[0])
     ax.set_ylabel(ax_labels[1])
-    
+
     fig.show()
 
 
@@ -166,3 +168,10 @@ def plot_waveform(wave, downsample=100, title="", ax_labels=["",""]):
     ax.set_xlabel(ax_labels[0])
     ax.set_ylabel(ax_labels[1])
     fig.show()
+
+def play_wave(wave):
+    pygame.mixer.pre_init(SAMPLING_RATE, -16, 1)
+    pygame.init()
+    sound = pygame.sndarray.make_sound(wave)
+    sound.play()
+    time.sleep(sound.get_length())
