@@ -183,3 +183,34 @@ def get_envelope(signal_in, downsample=10):
     convolution = scipy.signal.fftconvolve(match_filter, signal_in)
     convolution = scipy.signal.fftconvolve(match_filter, convolution)
     return np.abs(scipy.signal.hilbert(convolution[::downsample])), convolution
+
+def find_intterupts(envelope, high_theshold_ratio=.5, low_threshold_ratio=.35):
+    high_theshold = max(envelope) * high_theshold_ratio
+    low_threshold = max(envelope) * low_threshold_ratio
+
+    flag = False
+    interrupt_t = []
+
+    for x in range(len(envelope)):
+        if envelope[x] < low_threshold and flag:
+            flag = False
+        elif envelope[x] > high_theshold and not flag:
+            interrupt_t.append(x)
+            flag = True
+
+    return interrupt_t, (high_theshold, low_threshold)
+
+def plot_envelope_interrupts(envelope, interrupt_t, thresholds):
+    fig, ax = plt.subplots()
+    plt.plot(envelope)
+    plt.scatter(interrupt_t, np.array([1000]*len(interrupt_t)), c="r")
+    plt.plot([thresholds[0]]*len(envelope), c="m")
+    plt.plot([thresholds[1]]*len(envelope), c="m")
+    ax.set_title("Interpretting Interrupts")
+    ax.set_xlabel("Samples")
+    fig.show()
+
+
+
+def extract_data():
+    pass

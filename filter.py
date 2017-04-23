@@ -20,30 +20,9 @@ envelope, convolution = get_envelope(signal_in[:600000])
 # plot_signal(convolution)
 
 
-high_theshold = max(envelope) * .5
-low_threshold = max(envelope) * .35
-# print(low_threshold, high_theshold)
-flag = False
-interrupt_t = []
+interrupt_t, thresholds = find_intterupts(envelope)
 
-for x in range(len(envelope)):
-    if envelope[x] < low_threshold and flag:
-        flag = False
-    elif envelope[x] > high_theshold and not flag:
-        interrupt_t.append(x)
-        flag = True
-
-interrupt_plt = np.vstack((interrupt_t, np.array([1000]*len(interrupt_t)))).T
-# print(interrupt_plt)
-
-fig, ax = plt.subplots()
-plt.plot(envelope)
-plt.scatter(interrupt_t, np.array([1000]*len(interrupt_t)), c="r")
-plt.plot([high_theshold]*len(envelope), c="m")
-plt.plot([low_threshold]*len(envelope), c="m")
-ax.set_title("Interpretting Interrupts")
-ax.set_xlabel("Samples")
-fig.show()
+plot_envelope_interrupts(envelope, interrupt_t, thresholds)
 
 
 clock = int((interrupt_t[-1] - interrupt_t[0]) / (NUM_BITS_TRANSFERED - 1))
