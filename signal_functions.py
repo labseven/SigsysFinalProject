@@ -164,6 +164,8 @@ def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS, downsample=10, title
 
 
 def plot_waveform(wave, downsample=100, title="", ax_labels=["",""]):
+    """ Makes a plot of anything you give it. It does not care.
+    """
     fig, ax = plt.subplots()
     plt.plot(wave[::downsample])
     ax.set_title(title)
@@ -172,6 +174,10 @@ def plot_waveform(wave, downsample=100, title="", ax_labels=["",""]):
     fig.show()
 
 def play_wave(wave):
+    """ Plays a wave. WARNING: Blocks the program until the sound ends.
+    Input: array of magnitudes
+    Output: Plays sound on speakers
+    """
     pygame.mixer.pre_init(SAMPLING_RATE, -16, 1)
     pygame.init()
     sound = pygame.sndarray.make_sound(wave)
@@ -179,18 +185,40 @@ def play_wave(wave):
     time.sleep(sound.get_length())
 
 def get_envelope(signal_in, downsample=10):
+    """ Convolves a signal with a match filter twice, and then returns the envelope.
+    Input:
+        signal_in: The signal to process
+        downsample: One in how many inputs to use for the hilbert envelope creation
+    Return:
+        envelope of the convolved signal
+        just the convolved signal
+    """
     match_filter = make_match_filter()
+    # Convolving twice gets a much cleaner signal
+    # needed to not trigger the schmitt trigger multiple times
     convolution = scipy.signal.fftconvolve(match_filter, signal_in)
     convolution = scipy.signal.fftconvolve(match_filter, convolution)
     return np.abs(scipy.signal.hilbert(convolution[::downsample])), convolution
 
 def find_intterupts(envelope, high_theshold_ratio=.5, low_threshold_ratio=.35):
+    """ Returns a list of times when the signal goes high using a software schmitt trigger.
+    Input:
+        evelope: the envelope of the signal to process
+        high_theshold_ratio: ratio of the max of the signal to trigger a high_theshold
+        low_threshold_ratio: ratio of the max of the signal to trigger a low_threshold
+    Output:
+        interrupt_t: list of times when the signal goes high
+        thresholds: tuple of the high and low sthresholds
+    """
+    # Set thresholds based on max of the signal
     high_theshold = max(envelope) * high_theshold_ratio
     low_threshold = max(envelope) * low_threshold_ratio
 
     flag = False
     interrupt_t = []
 
+    # Loop through the signal and detect rising an falling edges.
+    # Records the times of rising edges. Similar to a schmitt trigger
     for x in range(len(envelope)):
         if envelope[x] < low_threshold and flag:
             flag = False
@@ -201,6 +229,8 @@ def find_intterupts(envelope, high_theshold_ratio=.5, low_threshold_ratio=.35):
     return interrupt_t, (high_theshold, low_threshold)
 
 def plot_envelope_interrupts(envelope, interrupt_t, thresholds):
+    """ Creates a pretty plot of the signal, interrups, and thresholds.
+    """
     fig, ax = plt.subplots()
     plt.plot(envelope)
     plt.scatter(interrupt_t, np.array([1000]*len(interrupt_t)), c="r")
@@ -211,18 +241,30 @@ def plot_envelope_interrupts(envelope, interrupt_t, thresholds):
     fig.show()
 
 
-def extract_data(interrupt_t):
+def extract_data(interrupt_t, clock_tolerance=.4):
+    """ Interprets data from a list of times of interrupts. Returns an int of
+    the data.
+    Input:
+        interrupt_t: list of interrupts
+        clock_tolerance: tolerance of the clock (as ratio of one tick)
+    """
+    # Average number of samples per bit.
+    # This has a low tolerance from the rising edge detection
     clock = int((interrupt_t[-1] - interrupt_t[0]) / (NUM_BITS_TRANSFERED - 1))
-    # print(clock)
 
     interrupt_index = 0
     flag = 1
     packet = []
 
+    # Record how many clock ticks there are between each interrupt
     for i in range(len(interrupt_t) - 1):
+        # Length of the signal
         delta_t = interrupt_t[i + 1] - interrupt_t[i]
-        for i in range(int(((delta_t + clock * .4) / clock))):
+        # delta_t divided by the clock
+        # clock_tolerance adds a tolerance to the interrupts
+        for i in range(int(((delta_t + (clock * clock_tolerance)) / clock))):
             packet.append(flag)
+        # Flip the flag each time
         flag = [1,0][flag]
 
     data = chr(int(''.join(str(e) for e in packet[4:12]), 2))
