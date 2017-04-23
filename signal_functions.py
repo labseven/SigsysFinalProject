@@ -15,6 +15,8 @@ SAMPLES_PER_MS = int(SAMPLING_RATE / 1000)
 CARRIER_FREQ = 5000
 CLOCK_MS = 100
 
+NUM_BITS_TRANSFERED = 14
+NUM_BITS_DATA = 8
 
 def sine_wave(hz, peak, len_ms, phase=0):
     """ Computes a discrete sine wave.

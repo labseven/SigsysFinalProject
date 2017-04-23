@@ -14,6 +14,8 @@ signal = make_bpsk_signal(data)
 export_wav(signal)
 
 
-plot_signal(signal, downsample=1, title="Signal of [1,0,0,1]", ax_labels=["Samples", "Magnitude"])
-while True:
-    time.sleep(10)
+# plot_signal(signal, downsample=1, title="Signal of [1,0,0,1]", ax_labels=["Samples", "Magnitude"])
+# while True:
+#     time.sleep(10)
+
+play_wave(signal)
