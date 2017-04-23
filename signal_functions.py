@@ -211,6 +211,19 @@ def plot_envelope_interrupts(envelope, interrupt_t, thresholds):
     fig.show()
 
 
+def extract_data(interrupt_t):
+    clock = int((interrupt_t[-1] - interrupt_t[0]) / (NUM_BITS_TRANSFERED - 1))
+    # print(clock)
 
-def extract_data():
-    pass
+    interrupt_index = 0
+    flag = 1
+    packet = []
+
+    for i in range(len(interrupt_t) - 1):
+        delta_t = interrupt_t[i + 1] - interrupt_t[i]
+        for i in range(int(((delta_t + clock * .4) / clock))):
+            packet.append(flag)
+        flag = [1,0][flag]
+
+    data = chr(int(''.join(str(e) for e in packet[4:12]), 2))
+    return data, packet
