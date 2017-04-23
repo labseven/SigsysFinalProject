@@ -5,11 +5,12 @@ import scipy
 import scipy.io.wavfile
 from scipy import signal
 import matplotlib.pyplot as plt
+import math
 
 SAMPLING_RATE = 192000
 SAMPLES_PER_MS = int(SAMPLING_RATE / 1000)
 
-CARRIER_FREQ = 1000
+CARRIER_FREQ = 10
 CLOCK_MS = 1000
 
 
@@ -52,7 +53,7 @@ def gaus_curve(length_ms, sample_rate=SAMPLING_RATE):
     return signal.gaussian((length_ms * sample_rate) / 1000, std=25*(length_ms))
 
 
-def make_match_filter(length_ms=CLOCK_MS, hz=CARRIER_FREQ, peak=1):
+def make_match_filter(length_ms=CLOCK_MS, hz=CARRIER_FREQ, peak=1000):
     cos1 = cosine_wave(hz, peak, length_ms)
     gaus = gaus_curve(length_ms)
 
@@ -78,7 +79,7 @@ def make_bpsk_signal(data, hz=CARRIER_FREQ, clock_ms=CLOCK_MS, peak=2000):
     if np.amin(data) == 0:
         data = ((data-.5)*2).astype(np.int16)
 
-    # Create data stream (sample input)
+    # Resize data in to match each  (sample input)
     num_bits = len(data)
     num_samples_per_bit = int((clock_ms * SAMPLING_RATE) / 1000)
     data_stream = np.repeat(data, (num_samples_per_bit,)).astype(np.int16)
@@ -123,7 +124,7 @@ def import_wav(filename):
     return wave_in[1]
 
 
-def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS):
+def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS, downsample=10, title="", ax_labels=["",""]):
     """ Plots a signal. Only plots 3 periods to each side of a bit.
     Input:
         signal:     ndarray to plot
@@ -131,8 +132,8 @@ def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS):
         hz:         frequency of the carrier
     """
 
+    signal = signal[::downsample]
     fig, ax = plt.subplots()
-
     # Number of samples on each side of each bit
     samples_to_show = int(SAMPLING_RATE / hz) * 2
 
@@ -150,10 +151,18 @@ def plot_signal(signal, hz=CARRIER_FREQ, clock_ms=CLOCK_MS):
 
     # Show the plot
     plt.plot(plt_signal)
+
+    ax.set_title(title)
+    ax.set_xlabel(ax_labels[0])
+    ax.set_ylabel(ax_labels[1])
+    
     fig.show()
 
 
-def plot_waveform(wave):
+def plot_waveform(wave, downsample=100, title="", ax_labels=["",""]):
     fig, ax = plt.subplots()
-    plt.plot(wave)
+    plt.plot(wave[::downsample])
+    ax.set_title(title)
+    ax.set_xlabel(ax_labels[0])
+    ax.set_ylabel(ax_labels[1])
     fig.show()

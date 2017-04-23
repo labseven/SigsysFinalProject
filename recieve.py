@@ -4,7 +4,7 @@ import numpy as np
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 48000
+RATE = 192000
 CHUNK = 1024 # Buffer size
 
 print("Recording")
@@ -15,7 +15,7 @@ stream = audio.open(format=FORMAT, channels=CHANNELS,
 
 frames = []
 
-for i in range(0, int(RATE / CHUNK)*2):
+for i in range(0, int(RATE / CHUNK)*5):
     data = stream.read(CHUNK)
     frames.append(data)
 
