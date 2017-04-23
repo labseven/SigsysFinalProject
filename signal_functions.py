@@ -247,6 +247,9 @@ def extract_data(interrupt_t, clock_tolerance=.4):
     Input:
         interrupt_t: list of interrupts
         clock_tolerance: tolerance of the clock (as ratio of one tick)
+    Returns:
+        data: int of the data
+        packet: original packet
     """
     # Average number of samples per bit.
     # This has a low tolerance from the rising edge detection
@@ -267,5 +270,5 @@ def extract_data(interrupt_t, clock_tolerance=.4):
         # Flip the flag each time
         flag = [1,0][flag]
 
-    data = chr(int(''.join(str(e) for e in packet[4:12]), 2))
+    data = int(''.join(str(e) for e in packet[4:12]), 2)
     return data, packet
