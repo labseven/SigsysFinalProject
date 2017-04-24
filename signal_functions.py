@@ -294,6 +294,8 @@ def extract_data(interrupt_t, clock_tolerance=.4):
         # Flip the flag each time
         flag = [1,0][flag]
 
+
+    # Minimal error checking
     try:
         data = int(''.join(str(e) for e in packet[4:12]), 2)
     except ValueError:
@@ -302,18 +304,32 @@ def extract_data(interrupt_t, clock_tolerance=.4):
     return data, packet
 
 def record_chunk(stream):
+    """ Records one chunk of data from the microphone stream.
+    """
     return np.fromstring(stream.read(REC_CHUNK), 'int16')
 
 def check_packet(data, packet):
-    # Opening
+    """ Does rudimentary error checking on a packet.
+    Input:
+        data: int of the data
+        packet: list of packet
+
+    Output:
+        Bool whether the packet is valid
+    """
+
+    # Opening frame
     if packet[:4] != [1, 0, 1, 0]:
         # print(packet[:3])
         return False
-    # Footer
+    # Closing frame
     if packet[-1] != 1:
         # print(packet[-1])
         return False
-    # Ascii
+    # Packet length
+    if len(packet) == NUM_BITS_TRANSFERED:
+        return False
+    # Data is Ascii
     if data > 128:
         # print(data)
         return False
