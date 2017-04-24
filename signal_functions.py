@@ -232,10 +232,14 @@ def plot_envelope_interrupts(envelope, interrupt_t, thresholds):
     """ Creates a pretty plot of the signal, interrups, and thresholds.
     """
     fig, ax = plt.subplots()
+    # The signal
     plt.plot(envelope)
+    # Points at each interrupt
     plt.scatter(interrupt_t, np.array([1000]*len(interrupt_t)), c="r")
+    # Line for low threshold and high threshold
     plt.plot([thresholds[0]]*len(envelope), c="m")
     plt.plot([thresholds[1]]*len(envelope), c="m")
+    
     ax.set_title("Interpretting Interrupts")
     ax.set_xlabel("Samples")
     fig.show()
