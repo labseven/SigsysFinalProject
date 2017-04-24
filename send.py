@@ -15,7 +15,7 @@ for c in sys.argv[1]:
 
     print("Data:", data)
 
-    signal = make_bpsk_signal(data)
+    signal = make_bpsk_signal(data, peak=6000)
 
 
     export_wav(signal)
