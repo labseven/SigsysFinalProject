@@ -26,8 +26,9 @@ data, packet = extract_data(interrupt_t)
 
 plot_envelope_interrupts(envelope, interrupt_t, thresholds)
 
+
 print("Packet:", packet, "Bits:", len(packet) + 1)
-print("Data:", data)
+print("Data:", chr(data))
 
 
 while True:
