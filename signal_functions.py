@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import math
 import pygame.sndarray
 import time
+import pyaudio
+
 
 SAMPLING_RATE = 192000
 SAMPLES_PER_MS = int(SAMPLING_RATE / 1000)
@@ -17,6 +19,10 @@ CLOCK_MS = 100
 
 NUM_BITS_TRANSFERED = 14
 NUM_BITS_DATA = 8
+
+AUDIO_FORMAT = pyaudio.paInt16
+REC_CHUNK = 1024
+MAX_REC_MS = 2000
 
 def sine_wave(hz, peak, len_ms, phase=0):
     """ Computes a discrete sine wave.
@@ -30,7 +36,7 @@ def sine_wave(hz, peak, len_ms, phase=0):
     """
     num_samples = (len_ms / 1000) * SAMPLING_RATE
     num_samples_period = SAMPLING_RATE / hz                 # Number of samples in one period
-    omega = pi * 2 / num_samples_period                  # Portion of wave per sample
+    omega = pi * 2 / num_samples_period                     # Portion of wave per sample
     xvalues = np.arange(int(num_samples_period)) * omega    # Array of x values of each sample
     one_period = np.sin(xvalues + phase) * peak             # One period of the wave
     return np.resize(one_period, (num_samples,)).astype(np.int16) # Repeat the wave to fill num_samples
@@ -232,14 +238,14 @@ def plot_envelope_interrupts(envelope, interrupt_t, thresholds):
     """ Creates a pretty plot of the signal, interrups, and thresholds.
     """
     fig, ax = plt.subplots()
-    # The signal
+    # The signalFORMAT = pyaudio.paInt16
     plt.plot(envelope)
     # Points at each interrupt
     plt.scatter(interrupt_t, np.array([1000]*len(interrupt_t)), c="r")
     # Line for low threshold and high threshold
     plt.plot([thresholds[0]]*len(envelope), c="m")
     plt.plot([thresholds[1]]*len(envelope), c="m")
-    
+
     ax.set_title("Interpretting Interrupts")
     ax.set_xlabel("Samples")
     fig.show()
@@ -276,3 +282,6 @@ def extract_data(interrupt_t, clock_tolerance=.4):
 
     data = int(''.join(str(e) for e in packet[4:12]), 2)
     return data, packet
+
+def record_chunk(stream):
+    return np.fromstring(stream.read(REC_CHUNK), 'int16')
