@@ -22,7 +22,7 @@ NUM_BITS_DATA = 8
 
 AUDIO_FORMAT = pyaudio.paInt16
 REC_CHUNK = 1024
-MAX_REC_MS = 2000
+FRAME_REC_MS = 500
 
 def sine_wave(hz, peak, len_ms, phase=0):
     """ Computes a discrete sine wave.
@@ -204,6 +204,7 @@ def get_envelope(signal_in, downsample=10):
     # needed to not trigger the schmitt trigger multiple times
     convolution = scipy.signal.fftconvolve(match_filter, signal_in)
     convolution = scipy.signal.fftconvolve(match_filter, convolution)
+    
     return np.abs(scipy.signal.hilbert(convolution[::downsample])), convolution
 
 def find_intterupts(envelope, high_theshold_ratio=.5, low_threshold_ratio=.35):
@@ -263,7 +264,7 @@ def extract_data(interrupt_t, clock_tolerance=.4):
     """
     # Average number of samples per bit.
     # This has a low tolerance from the rising edge detection
-    clock = int((interrupt_t[-1] - interrupt_t[0]) / (NUM_BITS_TRANSFERED - 1))
+    clock = int((interrupt_t[-1] - interrupt_t[0]) / (NUM_BITS_TRANSFERED - 1)) + 1
 
     interrupt_index = 0
     flag = 1
@@ -280,7 +281,11 @@ def extract_data(interrupt_t, clock_tolerance=.4):
         # Flip the flag each time
         flag = [1,0][flag]
 
-    data = int(''.join(str(e) for e in packet[4:12]), 2)
+    try:
+        data = int(''.join(str(e) for e in packet[4:12]), 2)
+    except ValueError:
+        data = 0
+
     return data, packet
 
 def record_chunk(stream):
