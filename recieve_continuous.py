@@ -10,9 +10,11 @@ rec_samples = (CLOCK_MS * NUM_BITS_TRANSFERED + 1000) * SAMPLES_PER_MS
 analyze_samples = (FRAME_REC_MS * SAMPLES_PER_MS)
 recording = deque(maxlen=rec_samples)
 
+stopping = False
+
 message = ""
 
-while True:
+while not stopping:
     i = 0
 
     while True:
@@ -28,7 +30,7 @@ while True:
             if max(envelope) > (2.2 * 10**14):
                 interrupt_t, thresholds = find_intterupts(envelope)
                 if len(interrupt_t) > 4:
-                    print(interrupt_t[-1] - interrupt_t[0], ((interrupt_t[3] - interrupt_t[0])/4) * (NUM_BITS_TRANSFERED-1))
+                    # print(interrupt_t[-1] - interrupt_t[0], ((interrupt_t[3] - interrupt_t[0])/4) * (NUM_BITS_TRANSFERED-1))
                     if (interrupt_t[-1] - interrupt_t[0]) > ((interrupt_t[3] - interrupt_t[0])/4) * (NUM_BITS_TRANSFERED-1):
                         for i in range(100):
                             recording.extend(record_chunk(stream))
@@ -51,18 +53,23 @@ while True:
     # print("Packet:", packet, "Bits:", len(packet) + 1)
     # print("Data:", chr(data))
 
-    if chr(data) in ascii_lowercase:
+    if check_packet(data, packet):
         message += chr(data)
         print(message)
+
     else:
         print("Got garbage data:", packet)
 
-    print("Highest signal:", max(envelope))
+    # print("Highest signal:", max(envelope))
     recording.clear()
+
+    if data == ord("|"):
+        print()
+        print("Quitting...")
+        stopping = True
+
+
 
 stream.stop_stream()
 stream.close()
 audio.terminate()
-
-while True:
-    time.sleep(10)

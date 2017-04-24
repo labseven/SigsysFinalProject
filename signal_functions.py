@@ -204,7 +204,7 @@ def get_envelope(signal_in, downsample=10):
     # needed to not trigger the schmitt trigger multiple times
     convolution = scipy.signal.fftconvolve(match_filter, signal_in)
     convolution = scipy.signal.fftconvolve(match_filter, convolution)
-    
+
     return np.abs(scipy.signal.hilbert(convolution[::downsample])), convolution
 
 def find_intterupts(envelope, high_theshold_ratio=.5, low_threshold_ratio=.35):
@@ -290,3 +290,19 @@ def extract_data(interrupt_t, clock_tolerance=.4):
 
 def record_chunk(stream):
     return np.fromstring(stream.read(REC_CHUNK), 'int16')
+
+def check_packet(data, packet):
+    # Opening
+    if packet[:4] != [1, 0, 1, 0]:
+        # print(packet[:3])
+        return False
+    # Footer
+    if packet[-1] != 1:
+        # print(packet[-1])
+        return False
+    # Ascii
+    if data > 128:
+        # print(data)
+        return False
+
+    return True
