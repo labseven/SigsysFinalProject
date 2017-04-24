@@ -92,13 +92,26 @@ def make_bpsk_signal(data, hz=CARRIER_FREQ, clock_ms=CLOCK_MS, peak=2000):
     # Resize data in to match each  (sample input)
     num_bits = len(data)
     num_samples_per_bit = int((clock_ms * SAMPLING_RATE) / 1000)
-    data_stream = np.repeat(data, (num_samples_per_bit,)).astype(np.int16)
+    data_stream = np.repeat(data, (num_samples_per_bit,))
+    gaus = gaus_curve(CLOCK_MS * 1.5)
+    data_stream_smooth = scipy.signal.fftconvolve(data_stream, gaus, mode="same")
+    data_stream_smooth = data_stream_smooth / max(data_stream_smooth)
+
+    # fig, ax = plt.subplots()
+    # plt.plot(data_stream)
+    # plt.plot(data_stream_smooth)
+    # plt.title("Data [1,0,0,1]")
+    # plt.xlabel("Samples")
+    # plt.ylabel("Magnitude")
+    # plt.legend(["Data", "Smoothed Data"])
+    # fig.show()
+
 
     # Create carrier wave
     carrier_wave = cosine_wave(hz, peak, clock_ms * num_bits)
 
     # Multiply them together to get phase shifted signal
-    signal = carrier_wave * data_stream
+    signal = (carrier_wave * data_stream_smooth).astype(np.int16)
 
     return signal
 
