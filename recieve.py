@@ -1,6 +1,8 @@
 import pyaudio
 import wave
 import numpy as np
+import time
+from filter_method import filter_signal
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -34,4 +36,9 @@ waveFile.setframerate(RATE)
 waveFile.writeframes(b''.join(frames))
 waveFile.close()
 
-print("Done")
+print("Done Recording")
+
+filter_signal()
+
+while True:
+    time.sleep(1)

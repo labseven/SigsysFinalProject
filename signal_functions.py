@@ -277,7 +277,8 @@ def extract_data(interrupt_t, clock_tolerance=.4):
     """
     # Average number of samples per bit.
     # This has a low tolerance from the rising edge detection
-    clock = int((interrupt_t[2] - interrupt_t[0]) / 3) + 1
+    # clock = int((interrupt_t[2] - interrupt_t[0]) / 3) + 1
+    clock = int((interrupt_t[-1] - interrupt_t[0]) / (NUM_BITS_TRANSFERED - 1)) + 1
 
     interrupt_index = 0
     flag = 1
